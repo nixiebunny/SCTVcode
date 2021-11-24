@@ -32,9 +32,10 @@
 // V 0.4.3 09/24/21 DF  Improved Tetris
 // V 0.5.0 09/29/21 DF  Adding GPS over USB for SCTV-C
 // V 0.5.1 09/30/21 DF  GPS works, can be plugged and unplugged  
-// V 0.5.2 10/01/21 DF  Improved Pong end of game, added ball delay  
+// V 0.5.2 10/01/21 DF  Improved Pong end of game, added ball delay 
+// V 0.5.3 11/23/21 DF  Added 50 Hz menu option for our worldwide friends 
 
-char versionNo[]  = "Version 0.5.2\n";
+char versionNo[]  = "Version 0.5.3\n";
 
 // THINGS TO DO
 
@@ -138,8 +139,8 @@ int costab[nsteps];  // scaled int angle lookup tables, filled in during init
 // display parameters
 const int middle = 1280;      // X,Y middle of visible screen
 const int midDAC = 2048;      // X,Y middle of dispaly
-const int motionDelay = 20;  // how fast the beam will get there before enabling
-const int settlingDelay = 5;  // let the beam finish its move before turning on
+const int motionDelay = 15;  // how fast the beam will get there before enabling
+const int settlingDelay = 8;  // let the beam finish its move before turning on
 const int glowDelay   =  2;  // was 7 usec to wait for beam to get bright before moving
 const int circleSpeed = 200;   // angular step; bigger makes circles draw faster and more coarsely
 const int lineStride  =  1;   // linear step; bigger makes lines draw faster and more coarsely

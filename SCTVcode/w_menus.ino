@@ -56,7 +56,9 @@ struct item timeMenu[] = {
 // The locale setting menu does DST, time zone, 12/24 hour select
 char zoneGMT[] = "Zone: GMT";
 char hourMode[] = " hour mode\n";
-char DSTlin[] = "DST ";
+char DSTlin[] = "DST "; 
+char Hzlin1[] = "Mains: ";
+char Hzlin2[] = " Hertz\n";
 struct item locMenu[] = {
 //  {text ,10,0,       BlankLn, 0,0},
   {menu ,10,MainCod, DoneStr, 0,0},
@@ -69,6 +71,9 @@ struct item locMenu[] = {
   {text ,10,0,       hourMode, 0,0},  // hour mode
   {text ,10,0,       DSTlin,   0,0},  // Daylight string
   {field,10,ModDST,  DSTStr,   0,0},  // gets "on" or "off"
+  {text ,10,0,       Hzlin1,   0,0},  // Hertz string
+  {field,10,ModHz,   HzStr,    0,0},  // gets "50" or "60"
+  {text ,10,0,       Hzlin2,   0,0},  // Hertz string
   {listend,0,0,BlankLn,0,0}
 };
 

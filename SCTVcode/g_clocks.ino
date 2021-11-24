@@ -37,6 +37,7 @@ char HrSelStr[8];    // 12 or 24 for time format
 char ZoneStr[] = "-07";
 char ZMinStr[] = "00";
 char DSTStr[] = "Off\n";
+char HzStr[] = "00";
 
 // Time strings - These are updated by makeTimeStrings()
 char CenStr[] = "00";
@@ -268,6 +269,7 @@ void makeTimeStrings() {
   MinStr[1] = (Mins % 10) | '0';
   SecStr[0] = (Secs / 10) | '0';
   SecStr[1] = (Secs % 10) | '0';
+  HzStr[0] = (Hertz / 10) | '0';
   if (DST) 
   {
     DSTStr[1] = 'n';   // DST on
