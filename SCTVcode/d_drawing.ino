@@ -414,7 +414,7 @@ void DoAList(struct item *list)
 const int nSavers = 31;
 int lastHour = 0;
 
-void IncHour() {
+void updateScreenSaver() {
   if (Hrs != lastHour) {  // on the hour
     ScrX++;
     if (ScrX >= nSavers) ScrX = 0;

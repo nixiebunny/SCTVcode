@@ -34,8 +34,9 @@
 // V 0.5.1 09/30/21 DF  GPS works, can be plugged and unplugged  
 // V 0.5.2 10/01/21 DF  Improved Pong end of game, added ball delay 
 // V 0.5.3 11/23/21 DF  Added 50 Hz menu option for our worldwide friends 
+// V 1.0.0 11/30/21 DF  Made screensaver bigger, issued as a release
 
-char versionNo[]  = "Version 0.5.3\n";
+char versionNo[]  = "Version 1.0.0\n";
 
 // THINGS TO DO
 
