@@ -37,7 +37,7 @@ void setup()
   drop_tetromino();
 
   myusb.begin();     // start the USB device service
-
+  readRTClocale();   // get the locale data if it was stored
 }
 
 

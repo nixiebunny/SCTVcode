@@ -141,6 +141,7 @@ void DoModFunc(int func) {
       Century = Century + EncDir;
       if (Century > 99) Century -= 100;
       if (Century <0)   Century += 100;
+      writeRTClocale();   // save the updated time into the DS3232
       break;
 
     case ModYrs:
@@ -189,22 +190,26 @@ void DoModFunc(int func) {
       Zone = Zone + EncDir;
       if (Zone > 11) Zone -= 24;   // time zones from GMT-12 to GMT+11
       if (Zone < -12) Zone += 24;
+      writeRTClocale();   // save the updated time into the DS3232
       break;
 
     case ModZmin:
       ZMins = ZMins + EncDir;
       if (ZMins > 45) ZMins -= 60;    // time zone minutes change by 15 minutes
       if (ZMins < 0) ZMins += 60;
+      writeRTClocale();   // save the updated time into the DS3232
       break;
 
     case ModHrSel:
       if (Hr12 == 0) Hr12 = 1;        // toggle 12 hour vs 24 hour mode
       else Hr12 = 0;
+      writeRTClocale();   // save the updated time into the DS3232
       break;
 
     case ModDST:
       if (DST == 0) DST = 1;        // toggle daylight savings enable
       else DST = 0;
+      writeRTClocale();   // save the updated time into the DS3232
       break;
 
     case ModHz:
@@ -220,6 +225,7 @@ void DoModFunc(int func) {
         JifTick = 6;
         HalfSec = 25;
       }
+      writeRTClocale();   // save the updated time into the DS3232
       break;
     default:   // don't do anything!
     break;

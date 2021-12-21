@@ -35,8 +35,9 @@
 // V 0.5.2 10/01/21 DF  Improved Pong end of game, added ball delay 
 // V 0.5.3 11/23/21 DF  Added 50 Hz menu option for our worldwide friends 
 // V 1.0.0 11/30/21 DF  Made screensaver bigger, issued as a release
+// V 1.0.1 12/20/21 DF  Made the locale data stored in the RTC chip
 
-char versionNo[]  = "Version 1.0.0\n";
+char versionNo[]  = "Version 1.0.1\n";
 
 // THINGS TO DO
 
@@ -171,6 +172,8 @@ int YSaver;          // current Y offset of screensaver
 int DST = 0;        // daylight savings, 0 or 1 hour advance
 int Zone = -7;      // time zone, -12 to +12 hours
 int ZMins = 0;      // zone minutes, 0,15,30,45
+int rtcMagic = 0x33;   // magic number for verifying RTC data
+int rtcValid = 0;   // set to rtcMagic when RTC data written to tell if it's trustworthy
 
 int HundrSec = 0;   // hundredths of seconds, maybe not needed but GPS provides it
 unsigned long GPSage;  // GPS time since last valid reading, may indicate invalid
@@ -323,6 +326,22 @@ void writeRTCtime()
   Wire.endTransmission();
 }
 
+// Sets the RTC to the current locale, called when exiting the locale setting menu
+void writeRTClocale()
+{ 
+  int zn = Zone + 30;  // make it fit in an unsigned byte so it won't get garbled
+  
+  Wire.beginTransmission(DS3232_ADDRESS);
+  Wire.write(0x18); // register select is in the SRAM region of the DS3232
+  Wire.write(rtcMagic);   // flag the RTC data as being valid
+  Wire.write(Century);  // write registers 0x18 through 6 in order
+  Wire.write(zn);
+  Wire.write(ZMins);
+  Wire.write(Hr12);
+  Wire.write(Hertz);
+  Wire.endTransmission();
+}
+
 // Reads the DS3232 via I2C and fills time variables with binary data
 void readRTCtime()
 {
@@ -350,6 +369,32 @@ void readRTCtime()
   Mons  = ((mo & 0x0f) + ((mo & 0x10) >> 3) * 5);
   Years = ((yr & 0x0f) + ((yr & 0x70) >> 3) * 5);
   WDay  = GetWDay(Days, Mons, Years, Century);
+}
+
+// Reads the DS3232 via I2C and fills locale variables if they're valid, otherwise skips
+void readRTClocale()
+{
+  Wire.beginTransmission(DS3232_ADDRESS);
+  Wire.write(0x18);  // read locale data starting at byte 0x18
+  Wire.endTransmission();
+
+  Wire.requestFrom(DS3232_ADDRESS, 6, 1);  // request seven bytes, then stop
+  if (Wire.read() == rtcMagic) {
+    Century = Wire.read();
+    Zone    = Wire.read() - 30;
+    ZMins   = Wire.read();
+    Hr12    = Wire.read();
+    Hertz   = Wire.read();
+    rtcValid = 1;
+  }
+  else {
+    Wire.read();
+    Wire.read();
+    Wire.read();
+    Wire.read();
+    Wire.read();
+    rtcValid = 0;
+  }
 }
 
 // ------------------------------------ GPS handler ---------------------------------
