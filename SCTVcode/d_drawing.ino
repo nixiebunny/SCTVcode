@@ -44,8 +44,7 @@ void DoSeg()
     int firstAngle = FirstO     * (nsteps >> 3);
     int lastAngle = (LastO + 1) * (nsteps >> 3); 
     int bigness = (xrad > yrad ? xrad : yrad );
-    int stride = (circleSpeed) / bigness;
-    if (stride < 1) stride = 1;
+    int stride = (circleSpeed<<8) / bigness;   // stride is scaled by 256 to allow finer resolution of step size
     xstart = ((costab[firstAngle] * xrad)>>16) + xcen;
     ystart = ((sintab[firstAngle] * yrad)>>16) + ycen;
     xmotion = abs(thisX - xstart);
@@ -61,10 +60,10 @@ void DoSeg()
     digitalWrite(BlankPin, HIGH);        // start making photons
     delayMicroseconds(glowDelay);        // wait for glow to start
 
-    // draw the circle with the beam on
-    for (i=firstAngle; i<lastAngle; i+=stride) {
-      thisX = ((costab[(i) % nsteps] * xrad) >> 16) + xcen;
-      thisY = ((sintab[(i) % nsteps] * yrad) >> 16) + ycen;
+    // draw the circle with the beam on, sride is 24.8 bits to allow fine rate control
+    for (i=(firstAngle<<8); i<(lastAngle<<8); i+=stride) {
+      thisX = ((costab[(i>>8) % nsteps] * xrad) >> 16) + xcen;
+      thisY = ((sintab[(i>>8) % nsteps] * yrad) >> 16) + ycen;
       analogWrite(XDACPin, thisX);
       analogWrite(YDACPin, thisY);
     }
