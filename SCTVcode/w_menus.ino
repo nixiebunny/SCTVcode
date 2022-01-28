@@ -1,6 +1,6 @@
 // ------------------------ Menus --------------------------
 
-// Parameters that are modified in menus 
+// Parameters that are modified in menus
 const int ModCen   = 1;
 const int ModYrs   = 2;
 const int ModMon   = 3;
@@ -28,53 +28,53 @@ char setTimDat[] = "Set Time & Date\n";
 char setLocale[] = "Set Locale\n";
 char setFLW[] = "Set FLW\n";
 struct item mainMenu[] = {
-  {menu,10,MainDCod,DoneStr,  0,0},
-  {menu,10,TimMCod,setTimDat ,0,0},
-  {menu,10,LocMCod,setLocale, 0,0},
-//{menu,10,FlwMCod,setFLW,    0,0},   // not used yet
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::menu,10,MainDCod,DoneStr,  0,0},
+  {ItemType::menu,10,TimMCod,setTimDat ,0,0},
+  {ItemType::menu,10,LocMCod,setLocale, 0,0},
+//{ItemType::menu,10,FlwMCod,setFLW,    0,0},   // not used yet
+  {ItemType::listend,0,0,BlankLn,0,0}
 };
 
 
 // The time setting menu
 struct item timeMenu[] = {
-  {menu ,10,TimDCod,DoneStr, 0,0},
-  {field,10,ModHrs, HrsStr,  0,0},
-  {text ,10,0,      ColStr,  0,0},
-  {field,10,ModMin, MinStr,  0,0},
-  {text ,10,0,      ColStr,  0,0},
-  {field,10,ModSec, SecStr,  0,0},
-  {field,10,ModCen, CenStr,  0,0},  // just for completeness
-  {field,10,ModYrs, YrsStr,  0,0},
-  {text ,10,0,      DashStr, 0,0},
-  {field,10,ModMon, MonthStr,0,0},
-  {text ,10,0,      DashStr, 0,0},
-  {field,10,ModDay, DayStr,  0,0},
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::menu ,10,TimDCod,DoneStr, 0,0},
+  {ItemType::field,10,ModHrs, HrsStr,  0,0},
+  {ItemType::text ,10,0,      ColStr,  0,0},
+  {ItemType::field,10,ModMin, MinStr,  0,0},
+  {ItemType::text ,10,0,      ColStr,  0,0},
+  {ItemType::field,10,ModSec, SecStr,  0,0},
+  {ItemType::field,10,ModCen, CenStr,  0,0},  // just for completeness
+  {ItemType::field,10,ModYrs, YrsStr,  0,0},
+  {ItemType::text ,10,0,      DashStr, 0,0},
+  {ItemType::field,10,ModMon, MonthStr,0,0},
+  {ItemType::text ,10,0,      DashStr, 0,0},
+  {ItemType::field,10,ModDay, DayStr,  0,0},
+  {ItemType::listend,0,0,BlankLn,0,0}
 };
 
 // The locale setting menu does DST, time zone, 12/24 hour select
 char zoneGMT[] = "Zone: GMT";
 char hourMode[] = " hour mode\n";
-char DSTlin[] = "DST "; 
+char DSTlin[] = "DST ";
 char Hzlin1[] = "Mains: ";
 char Hzlin2[] = " Hertz\n";
 struct item locMenu[] = {
 //  {text ,10,0,       BlankLn, 0,0},
-  {menu ,10,MainCod, DoneStr, 0,0},
-  {text ,10,0,       zoneGMT, 0,0},  // Start of time zone text
-  {field,10,ModZone, ZoneStr, 0,0},  // timezone sign and hours
-  {text ,10,0,       ColStr,  0,0}, 
-  {field,10,ModZmin, ZMinStr, 0,0},  // timezone minutes
-  {text ,10,0,       BlankLn, 0,0}, 
-  {field,10,ModHrSel,HrSelStr, 0,0},  // 12 or 24
-  {text ,10,0,       hourMode, 0,0},  // hour mode
-  {text ,10,0,       DSTlin,   0,0},  // Daylight string
-  {field,10,ModDST,  DSTStr,   0,0},  // gets "on" or "off"
-  {text ,10,0,       Hzlin1,   0,0},  // Hertz string
-  {field,10,ModHz,   HzStr,    0,0},  // gets "50" or "60"
-  {text ,10,0,       Hzlin2,   0,0},  // Hertz string
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::menu ,10,MainCod, DoneStr, 0,0},
+  {ItemType::text ,10,0,       zoneGMT, 0,0},  // Start of time zone text
+  {ItemType::field,10,ModZone, ZoneStr, 0,0},  // timezone sign and hours
+  {ItemType::text ,10,0,       ColStr,  0,0},
+  {ItemType::field,10,ModZmin, ZMinStr, 0,0},  // timezone minutes
+  {ItemType::text ,10,0,       BlankLn, 0,0},
+  {ItemType::field,10,ModHrSel,HrSelStr, 0,0},  // 12 or 24
+  {ItemType::text ,10,0,       hourMode, 0,0},  // hour mode
+  {ItemType::text ,10,0,       DSTlin,   0,0},  // Daylight string
+  {ItemType::field,10,ModDST,  DSTStr,   0,0},  // gets "on" or "off"
+  {ItemType::text ,10,0,       Hzlin1,   0,0},  // Hertz string
+  {ItemType::field,10,ModHz,   HzStr,    0,0},  // gets "50" or "60"
+  {ItemType::text ,10,0,       Hzlin2,   0,0},  // Hertz string
+  {ItemType::listend,0,0,BlankLn,0,0}
 };
 
 
@@ -86,7 +86,7 @@ struct item locMenu[] = {
 const int NClks = 8;    // number of clock faces to choose from (splash doesn't count)
 
 // list of clock face draw lists
-item * ClkList[] = 
+constexpr const item* ClkList[] =
    {faceList,    // analog clock face, needs hands drawn
     pongList,    // play Pong, special code is run for this
     tetrisList,  // play Tetris
@@ -133,8 +133,8 @@ void DoMenuFunc(int func) {
 
 
 // Do a field modification, rolling over to other end on limits
-// These are chars for now, which are unsigned, so the subtractions are weird. 
-// These maybe ought to be ints. 
+// These are chars for now, which are unsigned, so the subtractions are weird.
+// These maybe ought to be ints.
 void DoModFunc(int func) {
   switch (func) {
     case ModCen:
@@ -173,7 +173,7 @@ void DoModFunc(int func) {
       break;
 
     case ModMin:
-      Mins = Mins + EncDir; 
+      Mins = Mins + EncDir;
       if (Mins > 59) Mins -= 60;
       if (Mins < 0)  Mins += 60;
       writeRTCtime();   // save the updated time into the DS3232
@@ -219,7 +219,7 @@ void DoModFunc(int func) {
         JifTick = 5;
         HalfSec = 30;
       }
-      else 
+      else
       {
         Hertz = 50;
         JifTick = 6;
@@ -253,13 +253,13 @@ void ModMenu() {
 }
 
 // Navigate the menus via encoder commands
-void DoMenus() 
+void DoMenus()
 {
   if (InField)   // processing a parameter field
   {
-    if (EncDir)  // knob turned, 
+    if (EncDir)  // knob turned,
     {
-      if (InParam) 
+      if (InParam)
         DoModFunc(MenuCod);  // modify parameter value for this field
       else
         ModMenu();   // move to next field
@@ -273,7 +273,7 @@ void DoMenus()
       }
       else
         InParam = true;  // enter parameter-changing mode, blinks field
-    }    // EncDir 
+    }    // EncDir
   }
   else  // not InField, check for menu navigation
   {

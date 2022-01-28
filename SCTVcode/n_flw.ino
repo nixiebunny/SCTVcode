@@ -9,8 +9,8 @@ int xor1;           // first  int of thing to xor with it
 int xor4;           // last   int of thing to xor with it
 char FlwStr[] = "piss\n";      // four letters plus a NL and a 0
 
-// A whole bunch of four letter words, no juicy ones. 
-const char* FLWs[]  = 
+// A whole bunch of four letter words, no juicy ones.
+const char* FLWs[]  =
  {"abet","able","ably","abut","aced","aces","ache","achy","acid","acme",
 //  "yowl","yuck","yuks","yule","yups","yurt",
 //  "zags","zany","zaps","zeal","zees","zerk","zero","zest","zigs","zinc",
@@ -20,10 +20,10 @@ int FLWLen = sizeof(FLWs);
 
 // Four letter word draw list
 struct item flwList[] = {
-  {text,40,0,FlwStr,0,0},  // the nasty word itself
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::text,40,0,FlwStr,0,0},  // the nasty word itself
+  {ItemType::listend,0,0,BlankLn,0,0}
 };
 
 void MakeFLW() {
-  strcpy(FlwStr, (char*)&(FLWs[1]));
+  // strcpy(FlwStr, (char*)&(FLWs[1]));
 }

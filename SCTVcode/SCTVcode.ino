@@ -17,23 +17,23 @@
 // V 1.00  4/07/08 DF  Initial release
 // V 2.00  1/27/16 DF  working on Arduino C version
 //         1/29/16 DF  Code compiles, DoSeg works as to timing; actual circles await a PC board
-//         2/13/16 DF  It can draw a circle, but nothing else. 
+//         2/13/16 DF  It can draw a circle, but nothing else.
 //         2/16/16 DF  Text and menus work (still a centering bug), doing RTC
 // V 3.00 11/17/19 DF  Converting to Teensy 3.6, software circle generator
 // V 3.10 12/23/19 DF  It's starting to work, still need to fix centering bug
 // V 3.20 12/26/19 DF  Adding software centering, prelude to Pong capability
 // V 3.21 09/04/21 DF  Changed DAC scale in draw code to handle new position system
 //                     Pong is incorporated into drawlist, needs scoring work
-// V 3.22 09/05/21 DF  Pong has scoring, working on hands clock. Done. Had Shape bug. 
+// V 3.22 09/05/21 DF  Pong has scoring, working on hands clock. Done. Had Shape bug.
 // V 3.30 09/09/21 DF  Changing screen field to 2560, add a 0 to all x,y values, change byte to int
 // V 0.4.0 09/10/21 DF  Removed middle, fixed weekday, tweaked Pong
 // V 0.4.1 09/11/21 DF  Fixed WDayStr length, leading zeroes, doSeg
 // V 0.4.2 09/12/21 DF  Added haikus, Tetris objects, split into files
 // V 0.4.3 09/24/21 DF  Improved Tetris
 // V 0.5.0 09/29/21 DF  Adding GPS over USB for SCTV-C
-// V 0.5.1 09/30/21 DF  GPS works, can be plugged and unplugged  
-// V 0.5.2 10/01/21 DF  Improved Pong end of game, added ball delay 
-// V 0.5.3 11/23/21 DF  Added 50 Hz menu option for our worldwide friends 
+// V 0.5.1 09/30/21 DF  GPS works, can be plugged and unplugged
+// V 0.5.2 10/01/21 DF  Improved Pong end of game, added ball delay
+// V 0.5.3 11/23/21 DF  Added 50 Hz menu option for our worldwide friends
 // V 1.0.0 11/30/21 DF  Made screensaver bigger, issued as a release
 // V 1.0.1 12/20/21 DF  Made the locale data stored in the RTC chip
 // V 1.0.2 01/21/22 DF  Fixed brightness on 0 via stride, moved tails on 6,9
@@ -47,28 +47,28 @@ char versionNo[]  = "Version 1.0.2\n";
 //---------------------- Description -----------------------
 
 // Target CPU: Teensy 3.6
-// 32 bit ARM 
+// 32 bit ARM
 // Clock speed: 180 MHz
 
 // Basic description
 
 // The scope clock uses circles to display the time.
-// The circle generator is the Teensy's built-in dual DAC. 
-// sin and cos lookup tables allow a DAC update rate of ~1 MHz. 
-// Lines are drawn with the length calculated using Pythagoras when needed (not horiz or vert). 
-// 
-// The coordinate system is (0,0) at center of screen. 
-// The display scaling is .001" per unit, with active area of 2500x2500 units. 
-// All coordinates are 32 bit integers. 
+// The circle generator is the Teensy's built-in dual DAC.
+// sin and cos lookup tables allow a DAC update rate of ~1 MHz.
+// Lines are drawn with the length calculated using Pythagoras when needed (not horiz or vert).
+//
+// The coordinate system is (0,0) at center of screen.
+// The display scaling is .001" per unit, with active area of 2500x2500 units.
+// All coordinates are 32 bit integers.
 
-// The display timing has been tweaked to make clean circles. There 
-// is a bit of extra delay time provided for the CRT beam to move while blanked, 
-// which allows the use of simple low-slew-rate deflection amplifiers. 
+// The display timing has been tweaked to make clean circles. There
+// is a bit of extra delay time provided for the CRT beam to move while blanked,
+// which allows the use of simple low-slew-rate deflection amplifiers.
 //
 // Timekeeping
 //
-// The timebase is a DS3232 RTC chip. It's read once per display loop. 
-// Ther is currently no DST. 
+// The timebase is a DS3232 RTC chip. It's read once per display loop.
+// Ther is currently no DST.
 // DST may be added with lookup tables based on political regions.
 //
 // Draw list
@@ -98,8 +98,9 @@ char versionNo[]  = "Version 1.0.2\n";
 //
 // ---------------------------- Hardware definitions -----------------------------
 
+#include <array>
 
-#include <Arduino.h> 
+#include <Arduino.h>
 #include <Wire.h>    // I2C library
 #include "USBHost_t36.h"
 #include <TinyGPS.h>
@@ -108,13 +109,13 @@ char versionNo[]  = "Version 1.0.2\n";
 // #define SCTVA
 
  // The clock chip's I2C bus address
-#define DS3232_ADDRESS  0x68 
+#define DS3232_ADDRESS  0x68
 
 // Teensy 3.6 pin definitions
 int BlankPin   =  2;   // high blanks the display
 int encButPin  = 14;   // encoder button, 0 = pressed
 int encBPin    = 15;   // encoder quadrature
-int encAPin    = 16; 
+int encAPin    = 16;
 int XPosPin    = A15;  // horizontal centering knob
 #ifdef SCTVA
   int YPosPin  = A18;  // vertical centering knob on SCTVA is in odd place
@@ -128,14 +129,48 @@ int randPin    = A12;   // random numbers are read from the air here
 bool doingHand = true;   // diagnostic print for drawing code
 
 // new variables for software circle drawing
-float pi = 3.141592;
+constexpr float pi = 3.141592;
 int thisX, thisY;    // circle position
-int i;
-const int nsteps = 1024;   // was 240 to be consistent with the old circle angle definition
+constexpr int nsteps = 1024;   // was 240 to be consistent with the old circle angle definition
 
 // the sin/cos lookup table outputs are signed ints in range from -65536 to +65536
-int sintab[nsteps];
-int costab[nsteps];  // scaled int angle lookup tables, filled in during init
+
+template <class T, size_t Size>
+class Array {
+public:
+  T data[Size];
+
+  using size_type = size_t;
+  using value_type = T;
+
+  constexpr value_type& operator[](size_type index) {
+    return data[index];
+  }
+
+  constexpr const value_type& operator[](size_type index) const {
+    return data[index];
+  }
+};
+
+constexpr Array<int, nsteps> generateCosTab() {
+  Array<int, nsteps> costab {};
+  for (size_t i = 0; i < nsteps; ++i)
+    costab[i] = int(65536.*cos(float(i*2)*pi/float(nsteps)));
+
+  return costab;
+}
+
+constexpr Array<int, nsteps> generateSinTab() {
+  Array<int, nsteps> sintab {};
+  for (size_t i = 0; i < nsteps; i++)
+    sintab[i] = int(65536.*sin(float(i*2)*pi/float(nsteps)));
+
+  return sintab;
+}
+
+// scaled int angle lookup tables
+constexpr auto costab = generateCosTab();
+constexpr auto sintab = generateSinTab();
 
 // --------------------------- RAM variables --------------------------
 
@@ -152,28 +187,28 @@ int xPos;     // where the knob says to be
 int yPos;     // -512 to +511 range (10 bit ADC code)
 
 // timekeeping variables
-int Hr12 = 1;       // 1 if 12 hour mode, 0 if 24 hour mode
-int Century = 20;   // century range 0-99 (not Y10K compliant!)
-int Years = 21;     // years range 0-99
-int Mons = 1;       // months range 1-12
-int WDay = 0;       // day of week, 0=Sunday
-int Days = 1;       // days range 1-31
-int Hrs = 0;        // hours range 0-23
-int Mins = 0;       // minutes range 0-59            All of these have signed math when menu modifies them! 
-int Secs = 0;       // seconds range 0-59
-int Ticks = 0;      // ticks range 0-59 (0-49 if 50 Hz)
-int Jiffies = 0;    // 300 Hz jiffies 0-4 or 0-5
+bool Hr12 = true;       // 1 if 12 hour mode, 0 if 24 hour mode
+int8_t Century = 20;   // century range 0-99 (not Y10K compliant!)
+int8_t Years = 21;     // years range 0-99
+int8_t Mons = 1;       // months range 1-12
+int8_t WDay = 0;       // day of week, 0=Sunday
+int8_t Days = 1;       // days range 1-31
+int8_t Hrs = 0;        // hours range 0-23
+int8_t Mins = 0;       // minutes range 0-59            All of these have signed math when menu modifies them!
+int8_t Secs = 0;       // seconds range 0-59
+int8_t Ticks = 0;      // ticks range 0-59 (0-49 if 50 Hz)
+int8_t Jiffies = 0;    // 300 Hz jiffies 0-4 or 0-5
 int Blink;          // increments at tick rate, use Blnkbit to blink
-int HalfSec = 30;   // 30 for 60 Hz or 25 for 50 Hz
-unsigned int Hertz = 60;     // 50 or 60
-int JifTick = 5;    // 5 or 6 - jiffies per tick depends on Hz
+int8_t HalfSec = 30;   // 30 for 60 Hz or 25 for 50 Hz
+uint8_t Hertz = 60;     // 50 or 60
+int8_t JifTick = 5;    // 5 or 6 - jiffies per tick depends on Hz
 int ScrX;            // screensaver position table index 0..ScrTabL
 int XSaver;          // current X offset of screensaver
 int YSaver;          // current Y offset of screensaver
-int DST = 0;        // daylight savings, 0 or 1 hour advance
-int Zone = -7;      // time zone, -12 to +12 hours
-int ZMins = 0;      // zone minutes, 0,15,30,45
-int rtcMagic = 0x33;   // magic number for verifying RTC data
+bool DST = false;        // daylight savings, 0 or 1 hour advance
+int8_t Zone = -7;      // time zone, -12 to +12 hours
+int8_t ZMins = 0;      // zone minutes, 0,15,30,45
+int8_t rtcMagic = 0x33;   // magic number for verifying RTC data
 int rtcValid = 0;   // set to rtcMagic when RTC data written to tell if it's trustworthy
 
 int HundrSec = 0;   // hundredths of seconds, maybe not needed but GPS provides it
@@ -194,7 +229,7 @@ int theClock;        // which clock face to show
 int NItems;          // how many items in menu to make hot, found by DoAList???
 
 // Text string variables
-char *StrPtr;        // points to text string location
+const char *StrPtr;        // points to text string location
 char TheChr;         // current character ASCII code
 int ChrXPos;         // X position of LL corner of this character
 int ChrYPos;         // Y position
@@ -231,18 +266,20 @@ int LastO;          // last octant to display
 // They need a real xpos and ypos specified.
 
 // A draw list is a list of items to be drawn. These comprise:
-const int listend = 0;  //                                         end of list
-const int text    = 1;  // size, zero,     stringptr, xpos, ypos   text item, no menu
-const int menu    = 2;  // size, function, stringptr, xpos, ypos   text item with menu
-const int field   = 3;  // size, function, stringptr, xpos, ypos   changeable field text
-const int seg     = 4;  // size, function, segptr,    xpos, ypos   segment (special character)
+enum class ItemType {
+  listend = 0,  //                                         end of list
+  text    = 1,  // size, zero,     stringptr, xpos, ypos   text item, no menu
+  menu    = 2,  // size, function, stringptr, xpos, ypos   text item with menu
+  field   = 3,  // size, function, stringptr, xpos, ypos   changeable field text
+  seg     = 4,  // size, function, segptr,    xpos, ypos   segment (special character)
+};
 
 // Each item of a drawlist is one of these:
 struct item {
-  int type;        // see list above
+  ItemType type;        // see list above
   int scale;       // scale factor
   int func;        // function to execute (mod or menu numeration) if used, 0 if not
-  char *string;     // the string to display
+  const char* string;     // the string to display
   int xpos;        // where it goes, or used when calculating where it goes
   int ypos;
 };
@@ -252,7 +289,7 @@ const int maxItems = 20;    // a list is limited to this many things
 
 struct item TheList[maxItems];    // the list above is copied into here to allow modification
 
-item * whichList;  // pointer to current draw list
+const item* whichList;  // pointer to current draw list
 
 // Menu flag bits are now variables
 bool InMenu = false;     // 1 if currently in a menu at all
@@ -293,7 +330,7 @@ bool driver_active[CNT_DEVICES] = {false, false, false, false, false, false};
 // ----------------------- DS3232 time keeping code ----------------------------------
 
 // Make day of week from date variables
-int GetWDay(int d, int m, int yr, int cent) 
+int GetWDay(int d, int m, int yr, int cent)
 {
   int weekday;
   int y = cent*100 + yr;
@@ -303,8 +340,8 @@ int GetWDay(int d, int m, int yr, int cent)
 
 // Sets the RTC to the current time, called when exiting the time setting menu
 void writeRTCtime()
-{ 
-  int yr, mo, dy, dw, hr, mi, sc; 
+{
+  int yr, mo, dy, dw, hr, mi, sc;
 
   // convert our decimal values to BCD
   sc = Secs%10 + ((Secs/10) << 4);   // run enable: bit 7 = 0
@@ -329,9 +366,9 @@ void writeRTCtime()
 
 // Sets the RTC to the current locale, called when exiting the locale setting menu
 void writeRTClocale()
-{ 
+{
   int zn = Zone + 30;  // make it fit in an unsigned byte so it won't get garbled
-  
+
   Wire.beginTransmission(DS3232_ADDRESS);
   Wire.write(0x18); // register select is in the SRAM region of the DS3232
   Wire.write(rtcMagic);   // flag the RTC data as being valid
@@ -347,7 +384,7 @@ void writeRTClocale()
 void readRTCtime()
 {
  // int yr, mo, dy, dw, hr, mi, sc; // not using day of week now... fix this!!!
-  int yr, mo, dy, hr, mi, sc; 
+  int yr, mo, dy, hr, mi, sc;
 
   Wire.beginTransmission(DS3232_ADDRESS);
   Wire.write(00);  // read data starting at byte 00
@@ -417,11 +454,11 @@ static void readGPStime(TinyGPS &gps)
 {
   byte mon, days, hr, mins, sec, hund;
   int yrs;
-  
+
   gps.crack_datetime(&yrs, &mon, &days, &hr, &mins, &sec, &hund, &GPSage);
-  
-  GPSHun  = hund; 
-  GPSSec  = sec; 
+
+  GPSHun  = hund;
+  GPSSec  = sec;
   GPSMin  = mins;
   GPSHrs  = hr;
   GPSDay  = days;
@@ -440,18 +477,18 @@ const int NDays[]  = {0,31,28,31,30,31,30,31,31,30,31,30,31,  // normal year
 
 // Move forwards in calendar if needed due to GPS -> local conversion
 // Figures out month lengths, century, etc.
-void IncDays(void) 
+void IncDays(void)
 {
   int lastDay;
   if (Years % 4) lastDay = NDays[Mons + 12];  // a leap year
   else lastDay = NDays[Mons];                  // not a leap year
 
   Days += 1;
-  if (Days > lastDay) 
+  if (Days > lastDay)
   {
     Days = 1;                // begin the next month
     Mons += 1;
-    if (Mons > 12) 
+    if (Mons > 12)
     {
       Mons = 1;
       Years += 1;
@@ -467,17 +504,17 @@ void IncDays(void)
 // Move backwards in calendar if needed due to GPS -> local conversion
 // On month borrow, we go to the last day in the previous month
 // Figures out month lengths, century, etc.
-void DecDays(void) 
+void DecDays(void)
 {
   Days -= 1;
-  if (Days == 0) 
+  if (Days == 0)
   {
     Mons -= 1;   // goto last day of prev month
-    if (Mons == 0) 
+    if (Mons == 0)
     {
       Mons = 12;
       Years -= 1;
-      if (Years < 0) 
+      if (Years < 0)
       {
         Years = 99;
         Century -= 1;
@@ -511,7 +548,7 @@ void getTheTime(void)
     // deal with the fact that GPS is UTC, but we display local time
     Hrs   = GPSHrs + Zone + DST;         // Hour from GPS receiver, shifted to local time
     Mins  = GPSMin + (Zone > 0 ? ZMins : -ZMins);         // Minute from GPS receiver
-    
+
     // The minutes and hours may be out of range. Correct them if so
     if (Mins > 59)
     {
@@ -521,7 +558,7 @@ void getTheTime(void)
     {
       Hrs--;
     }
-    if (Hrs > 23) 
+    if (Hrs > 23)
     {
       Hrs -= 24;
       IncDays();   // do some math on the calendar
@@ -567,7 +604,7 @@ int EncTab[] = {none,decr,none,impos,  // 00
 // Initialize the encoder history to match its position
 void InitEnc()
 {
-  LastEnc = digitalRead(encBPin) << 1 | digitalRead(encAPin); 
+  LastEnc = digitalRead(encBPin) << 1 | digitalRead(encAPin);
   LastEnc = LastEnc * 5;  // copy of old and new next to each other
 }
 
@@ -575,7 +612,7 @@ void InitEnc()
 // This must be called exactly once per MainLp loop
 // Returns # of detents in EncDir, -=CCW, +=CW
 void DoEnc() {
-  LastEnc = LastEnc >> 2 | digitalRead(encBPin) << 3 | digitalRead(encAPin) << 2; 
+  LastEnc = LastEnc >> 2 | digitalRead(encBPin) << 3 | digitalRead(encAPin) << 2;
   EncDir = EncDir + EncTab[LastEnc];   // bump encoder value by motion via lookup table
 }
 

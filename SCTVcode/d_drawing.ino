@@ -2,10 +2,10 @@
 
 // SetScale sets the character size parameters from Scale
 // There are two char spacings - tight for big, looser for small scale
-void SetScale() 
+void SetScale()
 {
   ChrHt = Scale * OurChrHt;
-  if (Scale < 40) 
+  if (Scale < 40)
   {
     Kern = Scale * OurLilKern;
     RowGap = Scale * OurLilGap;
@@ -22,16 +22,16 @@ void SetScale()
 // Entered with the display blanked.
 // Exits with the display blanked.
 
-// Uses some math to draw each dot exactly once, with the number of dots calculated 
-// to produce a good even display brightness. The dots are close enough together that they 
-// are smeared together into a line or arc. 
-// 
-// Scaling:
-// The DACs are 12 bits, giving a field of 4096 square. We use 2500 for the active field, 
-// centered at (0,0). 
-// with the rest being extra room for the x and y position controls to work.  
+// Uses some math to draw each dot exactly once, with the number of dots calculated
+// to produce a good even display brightness. The dots are close enough together that they
+// are smeared together into a line or arc.
 //
-void DoSeg() 
+// Scaling:
+// The DACs are 12 bits, giving a field of 4096 square. We use 2500 for the active field,
+// centered at (0,0).
+// with the rest being extra room for the x and y position controls to work.
+//
+void DoSeg()
 {
   int len, xmotion, ymotion, motion, xstart, ystart;
  // if (doingHand) Serial.printf("shape %d  ", Shape);
@@ -39,10 +39,10 @@ void DoSeg()
     // draw a circle
     int xcen = XCenter * Scale + ChrXPos + XSaver + xPos + midDAC;  // X center position
     int ycen = YCenter * Scale + ChrYPos + YSaver + yPos + midDAC;  // Y center position
-    int xrad = (XSize * Scale) / 2;         // X size: radius is diameter/2 
+    int xrad = (XSize * Scale) / 2;         // X size: radius is diameter/2
     int yrad = (YSize * Scale) / 2;         // Y size
     int firstAngle = FirstO     * (nsteps >> 3);
-    int lastAngle = (LastO + 1) * (nsteps >> 3); 
+    int lastAngle = (LastO + 1) * (nsteps >> 3);
     int bigness = (xrad > yrad ? xrad : yrad );
     int stride = (circleSpeed<<8) / bigness;   // stride is scaled by 256 to allow finer resolution of step size
     xstart = ((costab[firstAngle] * xrad)>>16) + xcen;
@@ -61,7 +61,7 @@ void DoSeg()
     delayMicroseconds(glowDelay);        // wait for glow to start
 
     // draw the circle with the beam on, sride is 24.8 bits to allow fine rate control
-    for (i=(firstAngle<<8); i<(lastAngle<<8); i+=stride) {
+    for (int i = (firstAngle<<8); i < (lastAngle<<8); i += stride) {
       thisX = ((costab[(i>>8) % nsteps] * xrad) >> 16) + xcen;
       thisY = ((sintab[(i>>8) % nsteps] * yrad) >> 16) + ycen;
       analogWrite(XDACPin, thisX);
@@ -71,16 +71,16 @@ void DoSeg()
     digitalWrite(BlankPin, LOW);        // done, hide dot now
   }
   if (Shape == lin) {
-    // draw a line 
+    // draw a line
     xstart = XStart * Scale + ChrXPos + XSaver + xPos + midDAC;  // X start position
     ystart = YStart * Scale + ChrYPos + YSaver + yPos + midDAC;  // Y start position
     int xlen = ((XEnd - XStart) * Scale);         // X size
     int ylen = ((YEnd - YStart) * Scale);         // Y size
-    if (xlen == 0) 
+    if (xlen == 0)
     {
       len = abs(ylen);   //save ourselves a square root and two muls when not needed
     }
-    else 
+    else
     {
       if (ylen == 0)
       {
@@ -88,10 +88,10 @@ void DoSeg()
       }
       else
       {
-        len = (int)sqrt(xlen * xlen + ylen * ylen);
+        len = static_cast<int>(sqrt(xlen * xlen + ylen * ylen));
       }
     }
-    if (len <= 0) len = lineStride; 
+    if (len <= 0) len = lineStride;
     int xinc = ((xlen<<8)/len);
     int yinc = ((ylen<<8)/len);
     xmotion = abs(thisX - xstart);
@@ -100,13 +100,13 @@ void DoSeg()
  //   if (doingHand) Serial.printf("motion %4d   len %4d\n", motion, len);
     analogWrite(XDACPin, xstart);
     analogWrite(YDACPin, ystart);
-    
+
     delayMicroseconds(motion/motionDelay + settlingDelay);
     digitalWrite(BlankPin, HIGH);        // start making photons
     delayMicroseconds(glowDelay);        // wait for glow to start
-    
+
  //   if (doingHand) Serial.printf("len %4d   stride %4d\n", len, lineStride);
-    for (i=0; i<(len); i += lineStride) {
+    for (int i = 0; i < len; i += lineStride) {
       thisX = ((i*xinc)>>(8)) + xstart;
       thisY = ((i*yinc)>>(8)) + ystart;
       analogWrite(XDACPin, thisX);
@@ -153,7 +153,7 @@ void drawACircle(int xcenter, int ycenter, int diameter) {
 //
 // If the line is terminated with an NL, it sets NewL in MenuFlg and
 // subtracts one kern from the total width.
-void GetWid() 
+void GetWid()
 {
   ChrCnt = 0;
   StrWid = 0;
@@ -179,12 +179,12 @@ void GetWid()
     StrWid += Kern * ChrCnt;        // no newline, retain kern after last char
   }
 }
- 
-// Center centers a draw list, calculating X and Y string positions and storing them 
+
+// Center centers a draw list, calculating X and Y string positions and storing them
 // in the copy of the drawlist.
 
-// This is tricky, as a line of text is composed of multiple strings. Only the 
-// last string in each line has a newline char. 
+// This is tricky, as a line of text is composed of multiple strings. Only the
+// last string in each line has a newline char.
 
 // We need the total line width for all strings in a line so that we may
 // calculate the start X position for each string. So we need this info
@@ -202,11 +202,11 @@ void GetWid()
 // CentXLp sets the X positions and calculates the total height.
 // CentYLp sets the Y positions using the height.
 
-// It returns without doing anything if there is a string that has a non-zero position. 
-// This is true in a drawlist such as pong or face clock. 
+// It returns without doing anything if there is a string that has a non-zero position.
+// This is true in a drawlist such as pong or face clock.
 
 // center a draw list, filling in xpos and ypos fields for each element
-void Center(struct item *list) 
+void Center(struct item *list)
 {
   int LinWid = 0;     // scaled width of line in pixels
   int LinWids[10];    // array of line widths per line
@@ -218,7 +218,7 @@ void Center(struct item *list)
   DispHt = 0;
   wp = LinWids;   // array of widths of every line
   // CXLoop scans all lines of text, calcs height and widths
-  while (p->type != listend) 
+  while (p->type != ItemType::listend)
   {
     if (p->xpos != 0)
     {
@@ -240,12 +240,12 @@ void Center(struct item *list)
   }
   // calculate the Y start point from total size and row heights
   ChrYPos = ((DispHt - RowGap)/2);
-  
+
   // this last loop fills in xpos and ypos in each string, based on entire drawlist
   NewL = true;
   wp = LinWids;
   p = list;
-  while (p->type != listend) 
+  while (p->type != ItemType::listend)
   {
     Scale = p->scale;
     StrPtr = p->string;   // read string pointer
@@ -257,7 +257,7 @@ void Center(struct item *list)
       ChrYPos -= ChrHt;
     }
     NewL = false;
-    if (TheChr == '\n') 
+    if (TheChr == '\n')
       NewL = true;
     p->xpos = ChrXPos;   // write the real position into list
     ChrXPos += StrWid;
@@ -269,22 +269,22 @@ void Center(struct item *list)
 }
 
 
-// copy a draw list to TheList, since TheList is modified by Center(). 
-void copyList(struct item *list) 
+// copy a draw list to TheList, since TheList is modified by Center().
+void copyList(const item* list)
 {
-  item *p = list;
-  item *q = TheList; 
+  const item* p = list;
+  item* q = TheList;
   p = list;
-  while (p->type != listend) 
+  while (p->type != ItemType::listend)
   {
     q->type   = p->type;
     q->scale  = p->scale;
     q->func   = p->func;
-    q->string = p->string; 
-    q->xpos   = p->xpos;  
-    q->ypos   = p->ypos; 
+    q->string = p->string;
+    q->xpos   = p->xpos;
+    q->ypos   = p->ypos;
     p++;    // look at next list element
-    q++; 
+    q++;
   }
   q->type   = p->type;  // copy the last listend to terminate the list
 }
@@ -311,17 +311,17 @@ int GetSeg() {
 }
 
 // DispStr displays the zero-terminated text string pointed to by StrPtr
-void DispStr() 
+void DispStr()
 {
   int notLast;
 
   TheChr = (*StrPtr++);
   while ((TheChr >= 32)) // printable
   {
-    // look up character in ROM font table. This is tricky. 
+    // look up character in ROM font table. This is tricky.
     TheSeg = Font[(TheChr & 0x7f) - 32];
     notLast = GetSeg();
-    while (notLast) 
+    while (notLast)
     {
       DoSeg();           // display segments until last one found
       notLast = GetSeg();
@@ -334,22 +334,22 @@ void DispStr()
 
 
 // Display a draw list once
-void DoAList(struct item *list) 
+void DoAList(struct item *list)
 {
   item *p = list;
   int TheItem = 0;         // menu item currently being processed
-  char *DupPtr;        // duplicate StrPtr for bright work
+  const char* DupPtr;        // duplicate StrPtr for bright work
   int DupXPos;        // copy for highlighted strings
 
   InField = false;
-  while (p->type != listend) 
+  while (p->type != ItemType::listend)
   {
     Scale = p->scale;
     StrPtr = p->string;   // read string pointer
     ChrXPos = p->xpos;  // read position of string (not used by most!)
     ChrYPos = p->ypos;
-    // seg tells it to draw a circle or a line. This code does a circle. Need to do a line also. 
-    if (p->type == seg) {
+    // seg tells it to draw a circle or a line. This code does a circle. Need to do a line also.
+    if (p->type == ItemType::seg) {
       XCenter = YCenter = 0;  // position done by ChrX,YPos
       XSize = StrPtr[0];   // read out segment parameters from 'string' array
       YSize = StrPtr[1];
@@ -364,7 +364,7 @@ void DoAList(struct item *list)
     }
     else
     {
-      if (p->type != text) 
+      if (p->type != ItemType::text)
       { // it's a menu item, so save its code pointer and count up items
         TheItem++;
       }
@@ -372,13 +372,13 @@ void DoAList(struct item *list)
       DupXPos = ChrXPos;
       SetScale();
       DispStr();
-      if ((p->type != text) && (TheItem == HotItem)) 
+      if ((p->type != ItemType::text) && (TheItem == HotItem))
       {  // hot, either highlight or blink item
         MenuCod = p->func;
-        if (p->type == field) 
+        if (p->type == ItemType::field)
         {
           InField = true;
-          if (!InParam || Blink) 
+          if (!InParam || Blink)
           {  // if it's a parameter, blink it
             StrPtr = DupPtr;
             ChrXPos = DupXPos;
@@ -400,7 +400,7 @@ void DoAList(struct item *list)
     }
     p++;
   }
-  NItems = TheItem;   // will this work to set number of items? 
+  NItems = TheItem;   // will this work to set number of items?
 }
 
 // Once an hour, advance the screensaver to the next position
@@ -408,7 +408,7 @@ void DoAList(struct item *list)
 // any phosphor burn over a 4 by 8 pixel area.
 //
 
-// Screensaver moves the display impercetibly in a triangle raster scan 
+// Screensaver moves the display impercetibly in a triangle raster scan
 // every hour, to spread out the screen burn.
 const int nSavers = 31;
 int lastHour = 0;

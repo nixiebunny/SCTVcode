@@ -1,14 +1,10 @@
 
 // ----------------------------- Main startup code ------------------------------
-void setup() 
+void setup()
 {
   analogWriteResolution(12);    // Use the real DACs for X and Y position
-  
+
   // Circle lookup tables
-  for (i=0;i<nsteps;i++) {
-    costab[i] = int(65536.*cos(float(i*2)*pi/float(nsteps)));
-    sintab[i] = int(65536.*sin(float(i*2)*pi/float(nsteps)));
-  }
 // Set Arduino pins to proper directions
   pinMode(encButPin, INPUT_PULLUP);   // encoder pushbutton
   pinMode(encAPin,   INPUT_PULLUP);   // encoder quadrature signals
@@ -45,7 +41,7 @@ void setup()
 
 
 /* don't run the real one for now, testing things first.
-// test the string writing code. 
+// test the string writing code.
 
 char TestString[] = "Hello world";
 
@@ -61,43 +57,43 @@ void loop() {
  // Serial.println("This is one strings worth.");
 //  delay(30);   // once per frame?
 }
-// end of test code */ 
+// end of test code */
 
 
 /* don't run the real one for now, testing things first.
-// test the list drawing code. 
+// test the list drawing code.
 
 void loop() {
   XSaver = 0;
   YSaver = 0;
-  TheList = ALPHAList; 
-//  TheList = alphaList; 
-//  TheList = symbolList; 
-//  TheList = time6nList; 
+  TheList = ALPHAList;
+//  TheList = alphaList;
+//  TheList = symbolList;
+//  TheList = time6nList;
   Center(TheList);
   DoAList(TheList);
  // delay(200);   // don't write for a long time, to debug hardware circles.
 }
-// end of test code */ 
+// end of test code */
 
- // don't do the real thing while testing 
+ // don't do the real thing while testing
 
 // real code. This is not a test
-void loop() 
+void loop()
 {
   // process USB connection and disconnection events
   myusb.Task();
   // Print out information about different devices.
-  for (uint8_t i = 0; i < CNT_DEVICES; i++) 
+  for (uint8_t i = 0; i < CNT_DEVICES; i++)
   {
-    if (*drivers[i] != driver_active[i]) 
+    if (*drivers[i] != driver_active[i])
     {
-      if (driver_active[i]) 
+      if (driver_active[i])
       {
         Serial.printf("*** Device %s - disconnected ***\n", driver_names[i]);
         driver_active[i] = false;
-      } 
-      else 
+      }
+      else
       {
         Serial.printf("*** Device %d %s %04X:%04X - connected ***\n", i, driver_names[i], drivers[i]->idVendor(), drivers[i]->idProduct());
         driver_active[i] = true;
@@ -111,7 +107,7 @@ void loop()
 
         // If this is a new Serial device, start it up at NMEA buad rate
         Serial.printf("Connect before begin\n");
-        if (drivers[i] == &userial) 
+        if (drivers[i] == &userial)
         {
           userial.begin(usbBaudRate);
         }
@@ -126,7 +122,7 @@ void loop()
   if ((theClock != 1) && (theClock != 2))  // Pong and Tetris use position controls as paddles
   {
     xPos = yPos = 0;
-    for (i=0;i<40;i++) {
+    for (size_t i = 0; i < 40; i++) {
       xPos += analogRead(XPosPin) - 512;   // read the position controls
       yPos += analogRead(YPosPin) - 512;   // make them bipolar so midpoint is nominal
     }
@@ -135,26 +131,26 @@ void loop()
   }
 
   getTheTime();   // read whichever clock is correctest, make it be local time
-  
+
   blinkCount++;
   Blink = (blinkCount >> BlnkBit) & 1;  // a one bit, 5 times a second thingie
-  
+
   DoEnc();
   DoButt();
-  if (InMenu) 
+  if (InMenu)
   {
     DoMenus();      // if menu, process it
     pushed = false;
     EncDir = 0;
   }
-  else 
+  else
   {  // it's a clock, not a menu
-    if (EncDir != 0) 
+    if (EncDir != 0)
     {   // If knob turned, choose the next clock face
       theClock += EncDir;
       if (theClock >= NClks) theClock = 0;   // select the next clock face
       if (theClock < 0) theClock = NClks - 1;
-      if (theClock == 1) 
+      if (theClock == 1)
       {
         lScore = 0;                 // reset the score when entering Pong
         rScore = 0;
@@ -172,7 +168,7 @@ void loop()
     if (theClock == 0) DrawClk();        // clock 0 has hands to draw
     if (theClock == 1) doPong();         // clock 1 is Pong
     if (theClock == 2) drawTetris();     // clock 2 is Tetris
-    if (pushed) 
+    if (pushed)
     {
       whichList = mainMenu;
       HotItem = 1;
@@ -204,7 +200,7 @@ void loop()
   }
   lastMicros = micros();   // for next time
 
- // if (frame%20 == 0) Serial.printf("strings %4d   center %4d   draw %6d us\n", 
+ // if (frame%20 == 0) Serial.printf("strings %4d   center %4d   draw %6d us\n",
  //                  stringsTime-beforeTime, centerTime-stringsTime, drawTime-centerTime);
   frame++;   // turn off diagnostic printing
 }
