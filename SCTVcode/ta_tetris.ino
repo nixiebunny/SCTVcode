@@ -12,7 +12,7 @@
 
 int bucket[20];
 
-unsigned int last_interaction =    0; // when was the last button pressed? 
+unsigned int last_interaction =    0; // when was the last button pressed?
 unsigned int next_tick        =    0; // when will the next automatic step happen?
 int          tick_length      =  500; // set in reset_tetris()  how long does on step take? (decreases on higher levels)
 
@@ -72,16 +72,16 @@ const int TETROMINOES[7][4] = {
 int positionValue = 0;
 int rotationValue = 0;
 
-// Drawing the bucket is done in two dimensions. 
+// Drawing the bucket is done in two dimensions.
 // The goal is to show an outline of all occupied locations.
-// The bucket is scanned in each axis, looking for borders. 
-// Each border line segment is drawn, taking into account the neighbors. 
+// The bucket is scanned in each axis, looking for borders.
+// Each border line segment is drawn, taking into account the neighbors.
 
-// First, the horizontal bars are drawn, based on the borders in the X axis. 
-// The bucket is scanned horizontally, row by row. 
-// A line is drawn at the bottom of a row if the row has 1s and the row below has 0s. 
-// A line is drawn at the top of the row below if the row has 0s and the row below has 1s. 
-// The start of the line depends on the row contents to the left: 
+// First, the horizontal bars are drawn, based on the borders in the X axis.
+// The bucket is scanned horizontally, row by row.
+// A line is drawn at the bottom of a row if the row has 1s and the row below has 0s.
+// A line is drawn at the top of the row below if the row has 0s and the row below has 1s.
+// The start of the line depends on the row contents to the left:
 //   00 is left of this col
 //   11 is right of prev col.
 
@@ -106,10 +106,10 @@ int bsx, bsy, bex, bey = 0;
 void DrawBucketHorizBars(void)
 {
   int it, prev = 0;        // the bucket status (0..3) at col,row and col-1, row
-  
+
   // scan all rows in the bucket, finding any horizontal border lines and drawing them
   for (int row = 0; row<18; row++)
-  { 
+  {
     prev = 0;    // col -1 is always empty
     //   if (frame%50 == 0) Serial.printf("row %2d  bucket %04X ", row, bucket[row]);
     for (int col = 0; col < 14; col++) // do one extra column to get the last position displayed
@@ -140,10 +140,10 @@ void DrawBucketHorizBars(void)
 void DrawBucketVertBars(void)
 {
   int it, prev = 0;        // the bucket status (0..3) at col,row and col, row-1
-  
+
   // scan all columns in the bucket, finding any vertical border lines and drawing them
   for (int col = 1; col < 14; col++) // do one extra column to get the last position displayed
-  { 
+  {
  //   if (frame%50 == 0) Serial.printf("\n");
     prev = 0;    // row 0 is always empty
     for (int row = 0; row<18; row++)
@@ -172,7 +172,7 @@ void DrawBucketVertBars(void)
   }
 }
 
-// draw the things needed for Tetris. This will eventually have more stuff in it. 
+// draw the things needed for Tetris. This will eventually have more stuff in it.
 void drawTetris(void)
 {
   Scale = 1;    // make them fit!
@@ -182,16 +182,16 @@ void drawTetris(void)
     leftPaddle  += analogRead(XPosPin);   // read the position controls
     rightPaddle += analogRead(YPosPin);   // make them bipolar so midpoint is nominal
   }
-  
+
   // center then in the display area, and scale for the right amount of overshoot
   // rotation appears to be backwards, so it gets negated
   // 0..3 is its range, give 3 sets of 4 over knob range
-  rotationValue  = ((40960-rightPaddle)%18000) / 4500 ; 
-  
+  rotationValue  = ((40960-rightPaddle)%18000) / 4500 ;
+
   positionValue = leftPaddle / 4096;     // 0..9 is its range
   if (positionValue > 9) positionValue = 9;
   if (positionValue < 0) positionValue = 0;
-  
+
   DispBlock(next_tetr_type, 0, 16, 5);
   DispBlock(tetr_type, tetr_rotation, tetr_col + 1, tetr_row);
   DrawBucketHorizBars();
@@ -201,6 +201,6 @@ void drawTetris(void)
 // Tetris draw list just does the score. Court is drawn by drawTetris().
 char scoreStr[] = "00000";
 struct item tetrisList[] = {
-  {text,10,0,scoreStr,800, 0},
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::text,10,0,scoreStr,800, 0},
+  {ItemType::listend,0,0,BlankLn,0,0}
 };

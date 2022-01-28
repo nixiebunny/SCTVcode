@@ -1,7 +1,7 @@
 // ------------------------------------ Pong game -----------------------------------
 
 // Pong variables
-const int courtSize    = 2000; 
+const int courtSize    = 2000;
 const int ballSize     = 80;
 const int paddleLength = 200;
 const int leftWall     = -courtSize/2;
@@ -29,13 +29,13 @@ int rScore = 0;
 char lScoreStr[] = "00";
 char rScoreStr[] = "00";
 struct item pongList[] = {
-  {text,10,0,lScoreStr, leftWall/2-100, topWall+scoreHeight},
-  {text,10,0,rScoreStr,rightWall/2-100, topWall+scoreHeight},
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::text,10,0,lScoreStr, leftWall/2-100, topWall+scoreHeight},
+  {ItemType::text,10,0,rScoreStr,rightWall/2-100, topWall+scoreHeight},
+  {ItemType::listend,0,0,BlankLn,0,0}
 };
 
 
-// This plays Pong. It uses the position controls as paddles. 
+// This plays Pong. It uses the position controls as paddles.
 void doPong() {
 
   // read the position controls for paddles, and average many for smooth readings
@@ -57,17 +57,17 @@ void doPong() {
   // draw the paddles
   drawALine( leftWall, leftPaddle  - paddleLength,  leftWall, leftPaddle  + paddleLength);
   drawALine(rightWall, rightPaddle - paddleLength, rightWall, rightPaddle + paddleLength);
-  
-  
+
+
   // see if the ball hit anything
   // top or bottom is a simple bounce
   if ((yBall - ballSize/2) < botWall && yVel <= 0) yVel = -yVel;
   if ((yBall + ballSize/2) > topWall && yVel >= 0) yVel = -yVel;
-  
+
   // hit the left player's paddle, so rebound
-  if (((xBall - ballSize/2) < leftWall + 20) && ((xBall - ballSize/2) > leftWall - 50) && 
-       (xVel < 0) && 
-        yBall < (leftPaddle + paddleLength) && yBall > (leftPaddle - paddleLength) ) 
+  if (((xBall - ballSize/2) < leftWall + 20) && ((xBall - ballSize/2) > leftWall - 50) &&
+       (xVel < 0) &&
+        yBall < (leftPaddle + paddleLength) && yBall > (leftPaddle - paddleLength) )
   {
     xVel = -xVel;
     // some English
@@ -75,52 +75,52 @@ void doPong() {
     if (yBall < leftPaddle - paddleLength/2) yVel -= 20;
   }
   // hit the right player's paddle, so rebound
-  if (((xBall + ballSize/2) > rightWall - 20) && ((xBall + ballSize/2) < rightWall + 50) && 
-       (xVel > 0) && 
-        yBall < (rightPaddle + paddleLength) && yBall > (rightPaddle - paddleLength) ) 
+  if (((xBall + ballSize/2) > rightWall - 20) && ((xBall + ballSize/2) < rightWall + 50) &&
+       (xVel > 0) &&
+        yBall < (rightPaddle + paddleLength) && yBall > (rightPaddle - paddleLength) )
   {
     xVel = -xVel;
     // some English
     if (yBall > rightPaddle + paddleLength/2) yVel += 20;
     if (yBall < rightPaddle - paddleLength/2) yVel -= 20;
   }
-  
+
   // left lpayer missed, ball out of bounds, serve ball again and do some scoring work
-  if (xBall < leftWall - bounds)  
+  if (xBall < leftWall - bounds)
   {
     if (rScore >= 10)    // score stops at 11 points in Pong
     {
-      rScore = 11;  
+      rScore = 11;
       waitingForBall = true;
       waitFrames = 100000;   // stop the game by making it wait forever, the user will eventually notice
     }
     else
     {
-      rScore++;  
+      rScore++;
       xBall = centerLine;
       waitingForBall = true;
       waitFrames = ballStartDelayFrames;
     }
   }
-  
+
   // right player missed, bump left score
-  if (xBall > rightWall + bounds) 
+  if (xBall > rightWall + bounds)
   {
     if (lScore >= 10)    // score stops at 11 points in Pong
     {
-      lScore = 11;  
+      lScore = 11;
       waitingForBall = true;
       waitFrames = 100000;   // stop the game by making it wait forever, the user will eventually notice
     }
     else
     {
-      lScore++;  
+      lScore++;
       xBall = centerLine;
       waitingForBall = true;
       waitFrames = ballStartDelayFrames;
     }
   }
-  // don't do any ball display until ball is ready to release. 
+  // don't do any ball display until ball is ready to release.
   if (waitingForBall)
   {
     if (waitFrames > 0)
@@ -148,5 +148,5 @@ void doPong() {
   lScoreStr[1] = (lScore % 10) | '0';
   rScoreStr[0] = (rScore / 10) | '0';
   rScoreStr[1] = (rScore % 10) | '0';
-  
+
 }

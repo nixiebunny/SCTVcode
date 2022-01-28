@@ -1,6 +1,6 @@
 // ---------------------- haiku drawing -------------------------------
 
-const char haikus[][4][50] = { 
+const char haikus[][4][50] = {
     {"I can only write\n","These haikus by using my\n","Fingers to help count\n","Sally Hunter\n"},
     {"I adore all cats\n","I want to pet, scritch, boop, kiss!\n","But they want to bite\n","Sally Hunter\n"},
     {"The candy store of\n","My heart sells only gumballs\n","When you are not here\n","Sally Hunter\n"},
@@ -316,12 +316,12 @@ const char haikus[][4][50] = {
     {"reaching into sky\n","the girl breaks the wish -\n","bone of geese\n","Raymond Roseliep\n"},
     {"in a dark bag\n","onions\n","sprouting\n","Jennifer Virgil\n"},
     {"still lake -\n","a hawk makes off\n","with its image\n","R.E.T. Johnson\n"},
-    {"skiers!\n","standing\n","on the wind\n","Larry E. Martin\n"} 
+    {"skiers!\n","standing\n","on the wind\n","Larry E. Martin\n"}
 };
 
 const int nHaikus = 316;
 int hptr = 0;                 // index into that list
-const int haikuFrames = 600;  // how many frames to show each haiku for 
+const int haikuFrames = 600;  // how many frames to show each haiku for
 
 // Haiku draw list
 char haiku1Str[50];             //haikus get copied into these
@@ -331,13 +331,13 @@ char poetStr[50];
 char spacesStr[] = "    - ";
 
 struct item haikuList[] = {
-  {text,10,0,haiku1Str,  0,0},   // haiku display is centered, as is everything
-  {text,10,0,haiku2Str,  0,0}, 
-  {text,10,0,haiku3Str,  0,0}, 
-  {text,6,0,BlankLn,    0,0}, 
-  {text,6,0,spacesStr,  0,0},    // poet's name is offset to the right
-  {text,6,0,poetStr,    0,0}, 
-  {listend,0,0,BlankLn,0,0}
+  {ItemType::text,10,0,haiku1Str,  0,0},   // haiku display is centered, as is everything
+  {ItemType::text,10,0,haiku2Str,  0,0},
+  {ItemType::text,10,0,haiku3Str,  0,0},
+  {ItemType::text,6,0,BlankLn,    0,0},
+  {ItemType::text,6,0,spacesStr,  0,0},    // poet's name is offset to the right
+  {ItemType::text,6,0,poetStr,    0,0},
+  {ItemType::listend,0,0,BlankLn,0,0}
 };
 
 void doHaiku(void)
