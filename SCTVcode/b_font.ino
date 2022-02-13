@@ -86,13 +86,13 @@ const int Five[]    = { cir, 6, 6,12,12, 5,10,
                         lin, 2,10, 4,20, 6,13, 
                         lin, 4,20,12,20, 6,13, 0x8c};
 const int Six[]     = { cir, 6, 6,12,12, 6,13, 
-                        lin, 2,11, 8,20, 6,13, 0x8c};
+                        lin, 1,10, 8,20, 6,13, 0x8c};
 const int Seven[]   = { lin, 0, 0,12,20, 6,13, 
                         lin, 0,20,12,20, 6,13, 0x8c};
 const int Eight[]   = { cir, 6, 6,12,12, 6,13, 
                         cir, 6,16, 8, 8, 6,13, 0x8c};
 const int Nine[]    = { cir, 6,14,12,12, 6,13, 
-                        lin, 4, 0,10, 9, 6,13, 0x8c};
+                        lin, 4, 0,11,10, 6,13, 0x8c};
 const int Colon[]   = { cir, 2, 6, 4, 4, 6,13, 
                         cir, 2,14, 4, 4, 6,13, 0x84};
 const int SemiCol[] = { cir, 3,14, 2, 2, 6,13, 

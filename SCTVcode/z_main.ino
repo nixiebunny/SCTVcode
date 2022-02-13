@@ -113,7 +113,7 @@ void loop()
         Serial.printf("Connect before begin\n");
         if (drivers[i] == &userial) 
         {
-          userial.begin(usbBaudRate);
+          userial.begin(usbBaudRate); // This hangs if splash screen is too big, awaiting proper fix
         }
         Serial.printf("Exiting connect code\n");
       }
