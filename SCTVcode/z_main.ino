@@ -120,8 +120,10 @@ void loop()
     }
   }
   // Read the USB serial port if anything's there
-  while (userial.available())
-    myGps.encode(userial.read());
+  if (userial) {
+    while (userial.available())
+      myGps.encode(userial.read());
+  }
 
   if ((theClock != 1) && (theClock != 2))  // Pong and Tetris use position controls as paddles
   {

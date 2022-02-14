@@ -38,8 +38,9 @@
 // V 1.0.1 12/20/21 DF  Made the locale data stored in the RTC chip
 // V 1.0.2 01/21/22 DF  Fixed brightness on 0 via stride, moved tails on 6,9
 // V 1.0.3 02/12/22 DF  Fixed GPS startup by making splash screen faster, improved 6,9 some more
+// V 1.0.4 02/13/22 DF  Gated USB accesses with userial active test
 
-char versionNo[]  = "Version 1.0.3\n";
+char versionNo[]  = "Version 1.0.4\n";
 
 // THINGS TO DO
 
@@ -419,6 +420,12 @@ static void readGPStime(TinyGPS &gps)
   byte mon, days, hr, mins, sec, hund;
   int yrs;
   
+  // bail if we don't have valid serial...
+  if (!userial) {
+     GPSage = TinyGPS::GPS_INVALID_AGE;
+    return;
+  }
+
   gps.crack_datetime(&yrs, &mon, &days, &hr, &mins, &sec, &hund, &GPSage);
   
   GPSHun  = hund; 
