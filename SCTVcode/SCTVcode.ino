@@ -523,10 +523,12 @@ void getTheTime(void)
     // The minutes and hours may be out of range. Correct them if so
     if (Mins > 59)
     {
+      Mins -= 60;
       Hrs++;
     }
     if (Mins < 0)
     {
+      Mins += 60;
       Hrs--;
     }
     if (Hrs > 23) 
