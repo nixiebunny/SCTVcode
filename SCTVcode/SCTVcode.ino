@@ -292,6 +292,10 @@ USBDriver *drivers[] = {&hub1, &hub2, &hid1, &hid2, &hid3, &userial};
 const char * driver_names[CNT_DEVICES] = {"Hub1", "Hub2",  "HID1", "HID2", "HID3", "USERIAL1" };
 bool driver_active[CNT_DEVICES] = {false, false, false, false, false, false};
 
+// --------------------------------- Serial2 port -----------------------------
+
+uint32_t serial2BaudRate = 9600;
+
 // ----------------------- DS3232 time keeping code ----------------------------------
 
 // Make day of week from date variables
@@ -420,12 +424,6 @@ static void readGPStime(TinyGPS &gps)
   byte mon, days, hr, mins, sec, hund;
   int yrs;
   
-  // bail if we don't have valid serial...
-  if (!userial) {
-     GPSage = TinyGPS::GPS_INVALID_AGE;
-    return;
-  }
-
   gps.crack_datetime(&yrs, &mon, &days, &hr, &mins, &sec, &hund, &GPSage);
   
   GPSHun  = hund; 
@@ -504,7 +502,7 @@ void getTheTime(void)
   readGPStime(myGps);   // get current time into time variables
 
   // See if the GPS time is good, use either it or the RTC accordingly
-  if ((GPSage == TinyGPS::GPS_INVALID_AGE) || (GPSage > 1000))     // not conencted or stale time
+  if ((GPSage == TinyGPS::GPS_INVALID_AGE) || (GPSage > 1500))     // not conencted or stale time
   {
     readRTCtime();   // get current time into time variables
   }

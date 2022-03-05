@@ -19,6 +19,7 @@ void setup()
   rn1 = rn2 = rn3 = rn4 = 0x45;   // random number generator seed? Why not use random()?
   Wire.begin();          // RTC uses I2C
   Serial.begin(115200);    // debug port
+  Serial2.begin(serial2BaudRate); // Serial GPS port
   delay(100);
   EncDir = 0;    // no buttons being pushed or knobs being turned, we hope
   pushed = false;
@@ -123,6 +124,9 @@ void loop()
   if (userial) {
     while (userial.available())
       myGps.encode(userial.read());
+  } else {
+    while (Serial2.available())
+      myGps.encode(Serial2.read());
   }
 
   if ((theClock != 1) && (theClock != 2))  // Pong and Tetris use position controls as paddles
