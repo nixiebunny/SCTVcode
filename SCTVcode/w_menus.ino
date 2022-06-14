@@ -83,7 +83,7 @@ struct item locMenu[] = {
 // This is the clock display option list
 
 // If Clock is zero; then draw hands
-const int NClks = 8;    // number of clock faces to choose from (splash doesn't count)
+const int NClks = 9;    // number of clock faces to choose from (splash doesn't count)
 
 // list of clock face draw lists
 item * ClkList[] = 
@@ -97,6 +97,7 @@ item * ClkList[] =
     time6dList,  // 6 digit digital clock with date
     haikuList,   // some poetry at random
  //   flwList,     // four letter words at random
+    t42List,     // Tennis for Two game.
     splashList,  // splash screen vanishes when knob touched
     0};
 // -------------------------- Menu navigation -----------------------
