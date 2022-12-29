@@ -2,8 +2,14 @@
 // ----------------------------- Main startup code ------------------------------
 void setup() 
 {
-  analogWriteResolution(12);    // Use the real DACs for X and Y position
   
+#ifdef EXTERNAL_DAC
+  pinMode(XPosPin, INPUT_DISABLE);  // SCTV E needs this to prevent analog input hysteresis
+  pinMode(YPosPin, INPUT_DISABLE);  //
+#else
+  analogWriteResolution(12);    // Use the real DACs for X and Y position
+#endif
+
   // Circle lookup tables
   for (i=0;i<nsteps;i++) {
     costab[i] = int(65536.*cos(float(i*2)*pi/float(nsteps)));
@@ -14,6 +20,10 @@ void setup()
   pinMode(encAPin,   INPUT_PULLUP);   // encoder quadrature signals
   pinMode(encBPin,   INPUT_PULLUP);
   pinMode(BlankPin, OUTPUT);   // high blanks the display
+#ifdef EXTERNAL_DAC
+  pinMode(DACCSPin, OUTPUT);   // set up the LTC2632 DAC
+  SPI.begin();
+#endif
 
   InitEnc();
   rn1 = rn2 = rn3 = rn4 = 0x45;   // random number generator seed? Why not use random()?
@@ -43,6 +53,17 @@ void setup()
 
 // --------------------------- Main loop --------------------------
 
+/* commented out for test
+// test DAC with a ramp
+void loop() {
+  startDAC();
+  for (int ii = 0; ii<4096; ii++) {
+    dacWrite(0, ii);
+    dacWrite(1, ii);
+  }
+  endDAC();
+}
+ end of test loop */
 
 /* don't run the real one for now, testing things first.
 // test the string writing code. 
@@ -50,7 +71,7 @@ void setup()
 char TestString[] = "Hello world";
 
 void loop() {
-  Scale = 2;
+  Scale = 10;
   SetScale();
   ChrXPos = 00;
   ChrYPos = 128;
@@ -58,8 +79,8 @@ void loop() {
   YSaver = 0;
   StrPtr = TestString;
   DispStr();
- // Serial.println("This is one strings worth.");
-//  delay(30);   // once per frame?
+//  Serial.println("This is one strings worth.");
+  delay(5);   // once per frame?
 }
 // end of test code */ 
 

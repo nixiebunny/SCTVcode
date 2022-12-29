@@ -1,5 +1,55 @@
 // ------------------- Draw list display code ------------------------------
 
+// The SCTV-E uses a Teensy 4.1 computer, as it's still available. 
+// This requires an external DAC instead of the internal DAC used on
+// the earlier boards that used the Teensy 3.6.  
+// The DAC is the LTC2632, a 12 bit dual SPI DAC. 
+// It may be clocked up to 50 MHz according to the datasheet. 
+// Each write requires 24 bits: a command and the 12 bits of data. 
+// The moveToXY(x,y) function has a different behavior for 3.6 and 4.1.
+// The startDAC() and endDAC() functions start and stop the SPI transaction. 
+// This is done to make doSeg() take a lot less time to complete, 
+// as the overhead involved in starting and ending an SPI transaction 
+// is noticeable. 
+// 
+// startDAC() begins the SPI transaction 
+void startDAC(void) {
+#ifdef EXTERNAL_DAC
+  SPI.beginTransaction(SPISettings(DAC_SPI_HZ, DAC_SPI_BIT, DAC_SPI_MODE));
+#endif
+}
+
+// endDAC() ends the SPI transaction
+void endDAC(void) {
+#ifdef EXTERNAL_DAC
+  SPI.endTransaction();
+#endif
+}
+// dacWrite(chan, value) does one SPI DAC write for Teensy 4.1 only
+// enters and returns with DACCS high, assumes SPI transaction has been started already
+#ifdef EXTERNAL_DAC
+void dacWrite(int chan, int val) {
+  int num = val;
+  if (val < 0) num = 0;             // bounds checking to prevent wraparound at edge of screen
+  if (val > 4095) num = 4095;
+  digitalWrite(DACCSPin, LOW);
+  SPI.transfer((byte)(chan | 0x30));  // write and update DAC
+  SPI.transfer16((num << 4));       // send 12 bit value left justified
+  digitalWrite(DACCSPin, HIGH);
+}
+#endif
+
+// moveToXY(x,y) uses either the internal or external DAC to move the beam to x,y. 
+void moveToXY(int x, int y) {
+#ifdef EXTERNAL_DAC
+  dacWrite(0, x);  // LTC2632 chan 0 is X, chan 1 is Y
+  dacWrite(1, y);
+#else
+  analogWrite(XDACPin, x);
+  analogWrite(YDACPin, y);
+#endif
+}
+
 // SetScale sets the character size parameters from Scale
 // There are two char spacings - tight for big, looser for small scale
 void SetScale() 
@@ -52,8 +102,9 @@ void DoSeg()
     motion = (xmotion > ymotion ? xmotion : ymotion);   // how far to move from previous segment
 
     // go to the start point with beam off
-    analogWrite(XDACPin, xstart);
-    analogWrite(YDACPin, ystart);
+    startDAC();
+    moveToXY(xstart,ystart);
+    endDAC();
 
     // wait for the beam to reach the start point
     delayMicroseconds(motion/motionDelay + settlingDelay);
@@ -61,12 +112,13 @@ void DoSeg()
     delayMicroseconds(glowDelay);        // wait for glow to start
 
     // draw the circle with the beam on, sride is 24.8 bits to allow fine rate control
+    startDAC();
     for (i=(firstAngle<<8); i<(lastAngle<<8); i+=stride) {
       thisX = ((costab[(i>>8) % nsteps] * xrad) >> 16) + xcen;
       thisY = ((sintab[(i>>8) % nsteps] * yrad) >> 16) + ycen;
-      analogWrite(XDACPin, thisX);
-      analogWrite(YDACPin, thisY);
+      moveToXY(thisX,thisY);
     }
+    endDAC();
     delayMicroseconds(glowDelay);        // wait for glow to start
     digitalWrite(BlankPin, LOW);        // done, hide dot now
   }
@@ -98,20 +150,22 @@ void DoSeg()
     ymotion = abs(thisY - ystart);
     motion = (xmotion > ymotion ? xmotion : ymotion);   // how far to move from previous segment
  //   if (doingHand) Serial.printf("motion %4d   len %4d\n", motion, len);
-    analogWrite(XDACPin, xstart);
-    analogWrite(YDACPin, ystart);
+    startDAC();
+    moveToXY(xstart,ystart);
+    endDAC();
     
     delayMicroseconds(motion/motionDelay + settlingDelay);
     digitalWrite(BlankPin, HIGH);        // start making photons
     delayMicroseconds(glowDelay);        // wait for glow to start
     
  //   if (doingHand) Serial.printf("len %4d   stride %4d\n", len, lineStride);
+    startDAC();
     for (i=0; i<(len); i += lineStride) {
       thisX = ((i*xinc)>>(8)) + xstart;
       thisY = ((i*yinc)>>(8)) + ystart;
-      analogWrite(XDACPin, thisX);
-      analogWrite(YDACPin, thisY);
+      moveToXY(thisX,thisY);
     }
+    endDAC();
     delayMicroseconds(glowDelay);        // wait for glow to start
     digitalWrite(BlankPin, LOW);        // done, hide dot now
   }

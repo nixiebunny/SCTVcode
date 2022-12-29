@@ -62,7 +62,7 @@ char OffStr[]  = "Off\n";  // both are 5 bytes for easy copying
 char scopeClock[] = "The Scope Clock\n";
 char fromStr[]    = "from\n";
 char cathCorn[]   = "Cathode Corner\n";
-char copyR[]   = "(C)2021 David Forbes\n";
+char copyR[]   = "(C)2022 David Forbes\n";
 struct item splashList[] = {
   {text,8,0,scopeClock,0,0},
   {text,8,0,fromStr,   0,0},

@@ -1,6 +1,6 @@
 //  SCTVcode.ino  SCTV Scope Clock program
 //
-// Copyright (C) 2008,2016,2019,2021 David Forbes
+// Copyright (C) 2008,2016,2019,2021,2022 David Forbes
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,8 +39,11 @@
 // V 1.0.2 01/21/22 DF  Fixed brightness on 0 via stride, moved tails on 6,9
 // V 1.0.3 02/12/22 DF  Fixed GPS startup by making splash screen faster, improved 6,9 some more
 // V 1.0.4 02/13/22 DF  Gated USB accesses with userial active test
+// V 1.1.0 02/27/22 DF  Support added for SCTV-E using Teensy 4.1 with SPI DAC. 4.1 GPS is broken. 
+// V 1.1.1 05/14/22 DF  Adding SCT-A board with Teensy 4.1, different I/O pins
+// V 1.2.0 12/14/22 DF  Updated USB host library local copy
 
-char versionNo[]  = "Version 1.0.4\n";
+char versionNo[]  = "Version 1.2.0\n";
 
 // THINGS TO DO
 
@@ -48,15 +51,18 @@ char versionNo[]  = "Version 1.0.4\n";
 
 //---------------------- Description -----------------------
 
-// Target CPU: Teensy 3.6
+// Target CPU: SCTVA...D: Teensy 3.6
+//      SCTA,  SCTVE up:  Teensy 4.1
 // 32 bit ARM 
-// Clock speed: 180 MHz
+// Clock speed: 3.6: 180 MHz
+//              4.1: 600 MHz
 
 // Basic description
 
 // The scope clock uses circles to display the time.
-// The circle generator is the Teensy's built-in dual DAC. 
-// sin and cos lookup tables allow a DAC update rate of ~1 MHz. 
+// The circle generator is the Teensy 3.6's built-in dual DAC on boards thru SCTV-D, 
+//   or an external LTC2632 SPI dual DAC on SCTV-E up. 
+// sin and cos lookup tables allow a DAC update rate of ~1 MHz on 3.6, 550 kHz on 4.1. 
 // Lines are drawn with the length calculated using Pythagoras when needed (not horiz or vert). 
 // 
 // The coordinate system is (0,0) at center of screen. 
@@ -100,32 +106,81 @@ char versionNo[]  = "Version 1.0.4\n";
 //
 // ---------------------------- Hardware definitions -----------------------------
 
+// if old board with weird position ADC pins
+// #define SCTVA
+
+// SCTV-E up has Teensy 4.1 and SPI DAC, SCTV-D down use Teensy 3.6 with internal DAC
+// Comment out the line below if compiling for board with Teensy 3.6 (SCTV-A..D)
+#define SCTVE
+
+// The SCT has the Teensy 4.1 and external DAC, it also has different pins 
+// defined for many functions. 
+// #define SCT
+
+// The SCTVE has an external DAC as it uses a Teensy 4.1
+#ifdef SCTVE
+  #define EXTERNAL_DAC
+#endif
+
+// The SCT also has an external DAC as it uses a Teensy 4.1
+#ifdef SCT
+  #define EXTERNAL_DAC
+#endif
 
 #include <Arduino.h> 
 #include <Wire.h>    // I2C library
 #include "USBHost_t36.h"
 #include <TinyGPS.h>
+#ifdef EXTERNAL_DAC
+  #include <SPI.h>
+#endif
 
-// if old board with weird position ADC pins
-// #define SCTVA
-
- // The clock chip's I2C bus address
+// The clock chip's I2C bus address
 #define DS3232_ADDRESS  0x68 
 
-// Teensy 3.6 pin definitions
-int BlankPin   =  2;   // high blanks the display
-int encButPin  = 14;   // encoder button, 0 = pressed
-int encBPin    = 15;   // encoder quadrature
-int encAPin    = 16; 
-int XPosPin    = A15;  // horizontal centering knob
-#ifdef SCTVA
-  int YPosPin  = A18;  // vertical centering knob on SCTVA is in odd place
+// Teensy pin definitions, depend on board revision due to switch to Teensy 43.1 on SCTV-E
+#ifdef SCT
+  int BlankPin   = 32;   // high blanks the display
+  int encButPin  = 33;   // encoder button, 0 = pressed
+  int encBPin    = 34;   // encoder quadrature
+  int encAPin    = 35; 
+  int randPin    = A12;   // random numbers are read from the air here
 #else
-  int YPosPin  = A16;  // vertical centering knob
+  int BlankPin   =  2;   // high blanks the display
+  int encButPin  = 14;   // encoder button, 0 = pressed
+  int encBPin    = 15;   // encoder quadrature
+  int encAPin    = 16; 
+  int randPin    = A12;   // random numbers are read from the air here
 #endif
-int XDACPin    = A21;  // DAC for x axis
-int YDACPin    = A22;  // DAC for y axis
-int randPin    = A12;   // random numbers are read from the air here
+
+// The position control analog inputs moved around on various board revisions 
+#ifdef SCT
+int XPosPin    = A14;  // SCTV E centering pins moved
+int YPosPin    = A15;
+#else
+  #ifdef SCTVE
+    int XPosPin    = A14;  // SCTV E centering pins moved
+    int YPosPin    = A15;
+  #else
+    int XPosPin    = A15;  // SCTV A..D horizontal centering knob
+    #ifdef SCTVA
+      int YPosPin  = A18;  // SCTV A is in odd place
+    #else
+      int YPosPin  = A16;  // SCTV B..D vertical centering knob
+    #endif
+  #endif
+#endif
+
+// The early boards used the Teensy 3.6 built-in DAC, that's gone on the 4.1
+#ifndef EXTERNAL_DAC
+  int XDACPin    = A21;  // DAC for x axis
+  int YDACPin    = A22;  // DAC for y axis
+#else
+  int DACCSPin   = 10;   // the SPI enable for the LTC2632 dual DAC
+  const int DAC_SPI_HZ = 50000000; // was 50000000;      // SPI clock rate, data sheet maximum
+  const int DAC_SPI_BIT = MSBFIRST; 
+  const int DAC_SPI_MODE = SPI_MODE2;   // verify this!!!
+#endif
 
 bool doingHand = true;   // diagnostic print for drawing code
 
@@ -147,8 +202,15 @@ const int midDAC = 2048;      // X,Y middle of dispaly
 const int motionDelay = 15;  // how fast the beam will get there before enabling
 const int settlingDelay = 8;  // let the beam finish its move before turning on
 const int glowDelay   =  2;  // was 7 usec to wait for beam to get bright before moving
-const int circleSpeed = 200;   // angular step; bigger makes circles draw faster and more coarsely
-const int lineStride  =  1;   // linear step; bigger makes lines draw faster and more coarsely
+
+// The 4.1 external DAC is slower to access than the internal on 3.6, so change step size to compensate
+#ifndef EXTERNAL_DAC
+  const int circleSpeed = 200;   // angular step; bigger makes circles draw faster and more coarsely
+  const int lineStride  =  1;   // linear step; bigger makes lines draw faster and more coarsely
+#else
+  const int circleSpeed = 400;   // angular step; bigger makes circles draw faster and more coarsely
+  const int lineStride  =  2;   // linear step; bigger makes lines draw faster and more coarsely
+#endif
 
 int xPos;     // where the knob says to be
 int yPos;     // -512 to +511 range (10 bit ADC code)
