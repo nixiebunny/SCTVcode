@@ -146,7 +146,7 @@ void loop()
       myGps.encode(userial.read());
   }
 
-  if ((theClock != 1) && (theClock != 2))  // Pong and Tetris use position controls as paddles
+  if ((theClock != 1) && (theClock != 2) && (theClock != 8))  // Pong and Tetris and T42use position controls as paddles
   {
     xPos = yPos = 0;
     for (i=0;i<40;i++) {
@@ -183,7 +183,12 @@ void loop()
         rScore = 0;
         waitingForBall = true;                 // let the user have a chance to get ready
         waitFrames = ballStartDelayFrames;
-        xBall = centerLine;                   // give them a chance
+        xBall = centerLine;                   // give them a chance*/
+      }
+      if (theClock == 8)
+      {
+        twaitingForBall = true;
+        tWaitFrames = BDELAYFRAMES;
       }
       if (theClock == 2)
       {
@@ -195,7 +200,8 @@ void loop()
     if (theClock == 0) DrawClk();        // clock 0 has hands to draw
     if (theClock == 1) doPong();         // clock 1 is Pong
     if (theClock == 2) drawTetris();     // clock 2 is Tetris
-    if (pushed) 
+    if (theClock == 8) T42();
+    if (theClock != 8 && pushed) 
     {
       whichList = mainMenu;
       HotItem = 1;
