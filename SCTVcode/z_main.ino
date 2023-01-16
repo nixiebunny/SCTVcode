@@ -146,8 +146,8 @@ void loop()
       myGps.encode(userial.read());
   }
 
-  if ((theClock != 1) && (theClock != 2))  // Pong and Tetris use position controls as paddles
-  {
+  if ((theClock != 1) && (theClock != 2) && (theClock != 8))  // Pong, Tetris, and Etch-A-Sketch
+  {                                                           // use position controls as paddles
     xPos = yPos = 0;
     for (i=0;i<40;i++) {
       xPos += analogRead(XPosPin) - 512;   // read the position controls
@@ -189,17 +189,23 @@ void loop()
       {
         reset_tetris();
       }
+      if (theClock == 8)
+      {
+        resetEtchASketch();
+      }
       EncDir = 0;
     }
     whichList = ClkList[theClock];       // point to the clock drawlist we are displaying now
     if (theClock == 0) DrawClk();        // clock 0 has hands to draw
     if (theClock == 1) doPong();         // clock 1 is Pong
     if (theClock == 2) drawTetris();     // clock 2 is Tetris
-    if (pushed) 
+    if (theClock == 8) etchASketch();    // clock 8 is Etch-A-Sketch
+    if (theClock != 8 && pushed)
     {
       whichList = mainMenu;
       HotItem = 1;
       InMenu = true;
+      Serial.printf("Button pushed. theClock=%d\n", theClock);
     }
   }
 

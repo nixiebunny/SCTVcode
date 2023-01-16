@@ -43,7 +43,7 @@
 // V 1.1.1 05/14/22 DF  Adding SCT-A board with Teensy 4.1, different I/O pins
 // V 1.2.0 12/14/22 DF  Updated USB host library local copy
 
-char versionNo[]  = "Version 1.2.0\n";
+char versionNo[]  = "Version 1.2.0sf\n";
 
 // THINGS TO DO
 
@@ -111,7 +111,7 @@ char versionNo[]  = "Version 1.2.0\n";
 
 // SCTV-E up has Teensy 4.1 and SPI DAC, SCTV-D down use Teensy 3.6 with internal DAC
 // Comment out the line below if compiling for board with Teensy 3.6 (SCTV-A..D)
-#define SCTVE
+// #define SCTVE
 
 // The SCT has the Teensy 4.1 and external DAC, it also has different pins 
 // defined for many functions. 
